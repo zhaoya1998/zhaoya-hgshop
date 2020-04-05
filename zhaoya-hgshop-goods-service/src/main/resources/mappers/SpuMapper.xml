@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhaoya.dao.SpuDao">
+
+	<resultMap type="Spu" id="spuMapper">
+		<id property="id" column="id" />
+		<result column="goods_name" property="goodsName" />
+		<result column="is_marketable" property="isMarketable" />
+		<result column="brand_id" property="brandId" />
+		<result column="caption" property="caption" />
+		<result column="category_id" property="categoryId" />
+		<result column="small_pic" property="smallPic" />
+		<association property="brand" column="brand_id"
+			select="com.zhaoya.dao.BrandDao.getById"></association>
+		<association property="category" column="category_id"
+			select="com.zhaoya.dao.CategoryDao.getById"></association>
+	</resultMap>
+	<select id="list" resultMap="spuMapper">
+		select * from hg_spu
+		<where>
+			<if test="goodsName!=null and goodsName!=''">
+				and goods_name like concat('%',#{goodsName},'%')
+			</if>
+			<if test="caption!=null and caption!=''">
+				and caption like concat('%',#{caption},'%')
+			</if>
+			<if test="sortField==1">
+				order by goods_name
+			</if>
+			<if test="sortField==2">
+				order by caption
+			</if>
+			<if test="sortField==3">
+				order by brand_id
+			</if>
+			<!-- 倒序排列 -->
+			<if test="sortField!=0 and sortType==2">
+				desc
+			</if>
+		</where>
+	</select>
+
+	<insert id="add" useGeneratedKeys="true" keyColumn="id"
+		keyProperty="id">
+		insert into
+		hg_spu(goods_name,caption,is_marketable,brand_id,category_id,small_pic)
+		values(#{goodsName},#{caption},#{isMarketable},#{brandId},#{categoryId},#{smallPic})
+	</insert>
+
+	<delete id="deleteBatch">
+		delete from hg_spu where id in
+		<foreach collection="array" item="id" open="(" separator=","
+			close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+	<select id="getById" resultMap="spuMapper">
+		select * from hg_spu where
+		id=#{id}
+	</select>
+
+	<update id="update">
+		update hg_spu set
+		goods_name#{goodsName},caption=#{caption},is_marketable=#{isMarketable},brand_id=#{brandId},category_id=#{categoryId},small_pic=#{smallPic}
+		where id=#{id}
+	</update>
+
+	<update id="marketable">
+		update hg_spu set
+		is_marketable=#{isMarketable}
+		where
+		id=#{id}
+	</update>
+</mapper>
